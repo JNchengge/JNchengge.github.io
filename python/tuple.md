@@ -2,17 +2,17 @@
 **元组可以为空()，类型为tuple**</font>
 <br>
 # 修改元组变量
-    ```
-    dimentions=(200,50)
-    print(dimentions[0])
-    print(dimentions[1])
-    ```
-200&nbsp;
-50&nbsp;
+```python
+dimentions=(200,50)
+print(dimentions[0])
+print(dimentions[1])
+200
+50
+```
 修改只能是创建一个新的元组对象，重新引用
 <br>
-    ```
-    dimentions=(400,100)
-    ```
+```python
+dimentions=(400,100)
+```
 ##### 如果需要存储的一组值在程序的整个生命周期内都不变, 可使用元组.
 

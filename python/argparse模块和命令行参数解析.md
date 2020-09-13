@@ -189,3 +189,277 @@ optional arguments:
   - dest - 被添加到 parse_args() 所返回对象上的属性名。
 
 ## action
+
+### store
+- 存储参数的值，默认动作
+
+### store_const
+- 存储被const命名参数的值，例如
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',action='store_const',const=100)
+print(parser.parse_args(['--foo']))
+```
+```
+Namespace(foo=100)
+```
+1. 要注意的点有：`parse_args`操作的是列表对象
+2. 此例`--foo`参数的动作是存储`const=100`的值
+
+### store_true和store_false
+- 用于存储True和False
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',action='store_true')
+parser.add_argument('--bar',action='store_false')
+args=parser.parse_args(['--foo --bar'.split()])
+```
+```
+Namesapce(foo=True,bar=False)
+```
+
+### append
+- 用于存储一个列表，并且将每个参数的值追加到列表中
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',action='append')
+args=parser.parse_args('--foo 1 --foo 2'.split())
+print(args)
+```
+```
+Namespace(foo=['1', '2'])
+```
+
+### count
+- 用于计算参数出现的次数
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('-v',action='count',default=0)
+args=parser.parse_args(['-vvv'])
+print(args)
+```
+```
+Namespace(v=3)
+```
+- `default`是将`-v`的值设置成了默认0
+
+### extend
+- 存储一个列表，并将每个参数值加到列表中，例如：
+```python
+import argparse
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',action='extend',nargs='+',type=str)
+args=parser.parse_args(['--foo','1','--foo','2','3','4'])
+print(args)
+```
+```
+Namespace(foo=['1', '2', '3', '4'])
+```
+- python3.6.9没有`extend`这个动作
+
+## nargs
+- ArgumentParser 对象通常关联一个单独的命令行参数到一个单独的被执行的动作。 nargs 命名参数关联不同数目的命令行参数到单一动作。支持的值有：
+
+### N(一个整数)
+- 命令行的N个参数会被添加到一个列表之中
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',nargs=2,type=int)
+parser.add_argument('--bar',nargs=3,type=str)
+args=parser.parse_args('--bar 111 222 333 --foo 1 2'.split())
+print(args)
+```
+```
+Namespace(bar=['111', '222', '333'], foo=[1, 2])
+```
+- 解析：读入`bar`的三个参数和`foo`的两个参数，并且存储在对应的列表中
+- 注意：nargs指定了几个参数，就需要几个参数，少了会报错，多了会识别不出来属于谁
+
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',nargs=2,type=int)
+parser.add_argument('--bar',nargs=3,type=str)
+args=parser.parse_args('--bar 111 222 333 444 --foo 1 2'.split())
+print(args)
+```
+```
+usage: test.py [-h] [--foo FOO FOO] [--bar BAR BAR BAR]
+test.py: error: unrecognized arguments: 444
+```
+
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',nargs=2,type=int)
+parser.add_argument('--bar',nargs=3,type=str)
+args=parser.parse_args('--bar 111 --foo 1 2'.split())
+print(args)
+```
+```
+usage: test.py [-h] [--foo FOO FOO] [--bar BAR BAR BAR]
+test.py: error: argument --bar: expected 3 arguments
+```
+
+### ?
+- 如果可以的话，从命令行消耗一个参数，并产生一个与之对应的单一项。
+- 如果当前没有命令行参数，则产生`default`值
+- 如果字符串出现但是没有跟随参数，则产生`const`值
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',nargs='?',const='c',default='d')
+parser.add_argument('--bar',nargs='?',default='d')
+args=parser.parse_args(['--bar','XX','--foo','YY'])
+print(args)
+args=parser.parse_args(['--bar','XX','--foo'])
+print(args)
+args=parser.parse_args([])
+print(args)
+```
+```
+Namespace(bar='XX', foo='YY')
+Namespace(bar='XX', foo='c')
+Namespace(bar='d', foo='d')
+```
+
+- nargs='?' 的一个更普遍用法是允许可选的输入或输出文件:
+```python
+parser = argparse.ArgumentParser()
+parser.add_argument('infile', nargs='?', type=argparse.FileType('r'),default=sys.stdin)
+parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'),default=sys.stdout)
+parser.parse_args(['input.txt', 'output.txt'])
+parser.parse_args([])
+```
+```
+Namespace(infile=<_io.TextIOWrapper name='input.txt' encoding='UTF-8'>,outfile=<_io.TextIOWrapper name='output.txt' encoding='UTF-8'>)
+Namespace(infile=<_io.TextIOWrapper name='<stdin>' encoding='UTF-8'>,outfile=<_io.TextIOWrapper name='<stdout>' encoding='UTF-8'>)
+```
+
+### *
+- 所有当前命令行参数被聚集到一个列表中
+
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',nargs='*')
+parser.add_argument('--bar',nargs='*')
+args=parser.parse_args(['--bar','XX','1','2','3','--foo','YY','4','5','6'])
+print(args)
+```
+
+```
+Namespace(bar=['XX', '1', '2', '3'], foo=['YY', '4', '5', '6'])
+```
+
+- 没有参数时，产生`default=None`
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',nargs='*')
+parser.add_argument('--bar',nargs='*')
+args=parser.parse_args(['--bar','XX','1','2','3'])
+print(args)
+```
+
+```
+Namespace(bar=['XX', '1', '2', '3'], foo=None)
+```
+
+### +
+- 和 '*' 类似，所有当前命令行参数被聚集到一个列表中。另外，当前没有至少一个命令行参数时会产生一个错误信息。例如:
+
+```python
+parser=argparse.ArgumentParser(prog='PROG')
+parser.add_argument('foo',nargs='+')
+args=parser.parse_args(['XX','1','2','3'])
+print(args)
+args=parser.parse_args([])
+print(args)
+```
+
+```
+Namespace(foo=['XX', '1', '2', '3'])
+usage: PROG [-h] foo [foo ...]
+PROG: error: the following arguments are required: foo
+```
+
+## metavar
+- 当 ArgumentParser 生成帮助消息时，它需要用某种方式来引用每个预期的参数。 默认情况下，ArgumentParser 对象使用 dest 值作为每个对象的 "name"。 默认情况下，对于位置参数动作，dest 值将被直接使用，而对于可选参数动作，dest 值将被转为大写形式。 因此，一个位置参数 dest='bar' 的引用形式将为 bar。 一个带有单独命令行参数的可选参数 --foo 的引用形式将为 FOO。 示例如下:
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo')
+parser.add_argument('bar')
+parser.print_help()
+```
+
+```
+usage: test.py [-h] [--foo FOO] bar
+
+positional arguments:
+  bar
+
+optional arguments:
+  -h, --help  show this help message and exit
+  --foo FOO
+```
+
+- 解析：help信息中，有两个参数名字，**可选参数**`--foo`和**位置参数**`bar`，`--foo`被转换成大写形式，`bar`不变
+
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',metavar="XXX")
+parser.add_argument('bar',metavar="YYY")
+parser.print_help()
+```
+
+```
+usage: test.py [-h] [--foo XXX] YYY
+
+positional arguments:
+  YYY
+
+optional arguments:
+  -h, --help  show this help message and exit
+  --foo XXX
+```
+
+- 解析：使用`metavar`后，`XXX`代替了`FOO`，`YYY`代替了`bar`
+
+- 不同的`nargs`值可能导致`metavar`被多次使用。 提供一个<font color=#AA0000>元组</font>给`metavar`即为每个参数指定不同的显示信息:
+
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('--foo',nargs=3)
+parser.add_argument('-x',nargs=2,metavar=('bar','baz'))
+parser.print_help()
+```
+
+```
+usage: test.py [-h] [--foo FOO FOO FOO] [-x bar baz]
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --foo FOO FOO FOO
+  -x bar baz
+```
+
+## dest
+- 对于可选参数动作，dest 的值通常取自选项字符串。 ArgumentParser 会通过接受第一个长选项字符串并去掉开头的 -- 字符串来生成 dest 的值。 如果没有提供长选项字符串，则 dest 将通过接受第一个短选项字符串并去掉开头的 - 字符来获得。 任何内部的 - 字符都将被转换为 _ 字符以确保字符串是有效的属性名称。 下面的例子显示了这种行为:
+
+```python
+parser=argparse.ArgumentParser()
+parser.add_argument('-f','--foo-bar','--foo')
+parser.add_argument('-x','-y')
+parser.print_help()
+```
+
+```
+usage: test.py [-h] [-f FOO_BAR] [-x X]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FOO_BAR, --foo-bar FOO_BAR, --foo FOO_BAR
+  -x X, -y X
+```
+
+- 解析：`dest`取`FOO_BAR`作为全部字符串的名字，因为`--foo-bar`是第一个长选项字符串（由--开头，中间的-被转换为'_'）
+- 第二行`dest`取`X`作为全部字符串的名字，因为没有长选项字符串且`-x`为第一个短选字符串
+
+- `dest`也可以自定义属性名称
+

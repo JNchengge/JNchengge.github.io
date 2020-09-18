@@ -18,3 +18,8 @@
 * [Linux终端上直接运行python脚本](python/Linux终端上直接运行python脚本)
 * [sys.argv](python/sys.argv)
 * [argparse模块和命令行参数解析](python/argparse模块和命令行参数解析)
+* [property装饰器](python/property装饰器)
+* [partial](python/partial)
+* [数据模型](python/数据模型)
+* [Numpy](python/numpy)
+* [计算机网络](computer_network/计算机网络)

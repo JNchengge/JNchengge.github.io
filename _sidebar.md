@@ -23,3 +23,5 @@
 * [数据模型](python/数据模型)
 * [Numpy](python/numpy)
 * [计算机网络](computer_network/计算机网络)
+* [DES](cryption/DES)
+* [IDEA](cryption/IDEA)

@@ -1,2 +1,3 @@
-a=[1,2,3,4,5,6]
-print(a.reverse())
+a=dict(foo=1,bar=2,foobar=3)
+for i,v in enumerate(['foo','bar','foobar']):
+    print(i,v)

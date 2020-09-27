@@ -2,6 +2,7 @@
 * [列表](python/列表)
 * [浅复制和深复制](python/浅复制和深复制)
 * [不可变对象和可变对象](python/不可变对象和可变对象)
+* [字典](python/字典)
 * [数据类型和方法](python/数据类型和方法)
 * [tuple](python/tuple)
 * [dictionary](python/dictionary)

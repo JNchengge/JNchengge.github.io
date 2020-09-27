@@ -1,4 +1,2 @@
-a=['d','y','v']
-b=sorted(a,key=str.upper,reverse=True)
-print(b)
-print(a is b)
+a=[1,2,3,4,5,6]
+print(a.reverse())

@@ -27,3 +27,4 @@
 * [DES](cryption/DES)
 * [IDEA](cryption/IDEA)
 * [AES](cryption/AES)
+* [分组密码的操作模式](cryption/分组密码的操作模式)

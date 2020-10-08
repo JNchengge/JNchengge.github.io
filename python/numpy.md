@@ -8,7 +8,7 @@ numpy.array(object,dtype=None,copy=True,order=None,subok=False,ndmin=0)
 |:---:|:---:|
 |object|数组或者嵌套的数列|
 |dtype|数组元素的数据类型，可创建|
-|copy|对象hi否需要复制|
+|copy|对象是否需要复制|
 |order|创建数组的样式，C为行方向，F为列方向，A为任意方向|
 |subok|默认返回一个与基类类型一致的数组|
 |ndmin|指定生成数组的最小维度|
@@ -721,6 +721,124 @@ print(a)
  [6144 7168]
  [8192 9216]]
 ```
+- 解答
+```
+import numpy as np
+a=np.arange(10).reshape(5,2)
+print(a)
+for i in np.nditer(a):
+  print(a[...])
+  a[...]=2*a
+print(a)
+```
+- 检查过程
+
+```
+[[0 1]
+ [2 3]
+ [4 5]
+ [6 7]
+ [8 9]]
+[[0 1]
+ [2 3]
+ [4 5]
+ [6 7]
+ [8 9]]
+[[ 0  2]
+ [ 4  6]
+ [ 8 10]
+ [12 14]
+ [16 18]]
+[[ 0  4]
+ [ 8 12]
+ [16 20]
+ [24 28]
+ [32 36]]
+[[ 0  8]
+ [16 24]
+ [32 40]
+ [48 56]
+ [64 72]]
+[[  0  16]
+ [ 32  48]
+ [ 64  80]
+ [ 96 112]
+ [128 144]]
+[[  0  32]
+ [ 64  96]
+ [128 160]
+ [192 224]
+ [256 288]]
+[[  0  64]
+ [128 192]
+ [256 320]
+ [384 448]
+ [512 576]]
+[[   0  128]
+ [ 256  384]
+ [ 512  640]
+ [ 768  896]
+ [1024 1152]]
+[[   0  256]
+ [ 512  768]
+ [1024 1280]
+ [1536 1792]
+ [2048 2304]]
+[[   0  512]
+ [1024 1536]
+ [2048 2560]
+ [3072 3584]
+ [4096 4608]]
+[[   0 1024]
+ [2048 3072]
+ [4096 5120]
+ [6144 7168]
+ [8192 9216]]
+```
+- 其实就是乘了10遍2
+- 因为a[...]就是a的全部，每次都乘2
+
+```python
+import numpy as np
+a=np.arange(10).reshape(5,2)
+print(a)
+print(a is a[...])
+print(a[...])
+b=a[...]  #对a[...]进行修改，看是否会修改原来的a的值
+b[[0],[0]]=100
+print(b)
+print(a)  
+c=a.copy()  #看a[...]和a.copy()返回的是否同一对象
+print(b is c)
+```
+
+```
+[[0 1]
+ [2 3]
+ [4 5]
+ [6 7]
+ [8 9]]
+False
+[[0 1]
+ [2 3]
+ [4 5]
+ [6 7]
+ [8 9]]
+[[100   1]
+ [  2   3]
+ [  4   5]
+ [  6   7]
+ [  8   9]]
+[[100   1]
+ [  2   3]
+ [  4   5]
+ [  6   7]
+ [  8   9]]
+False
+```
+
+- 显然，对a[...]修改之后，原a的值也会发生改变
+
 
 ## 使用外部循环
 - `nditer`类的构造器拥有`flags`参数，接受下列值：
@@ -792,6 +910,52 @@ print()
 行顺序：
 0 1 2 3 4 5 6 7 8 9 
 ```
+
+```python
+import numpy as np
+a=np.arange(0,10).reshape(5,2)
+it=np.nditer(a,flags=['f_index'])
+while not it.finished:
+    print(it[0],"<",it.index,">")
+    it.iternext()
+```
+
+```
+0 < 0 >
+1 < 5 >
+2 < 1 >
+3 < 6 >
+4 < 2 >
+5 < 7 >
+6 < 3 >
+7 < 8 >
+8 < 4 >
+9 < 9 >
+```
+
+```python
+import numpy as np
+a=np.arange(0,10).reshape(5,2)
+it=np.nditer(a,flags=['c_index'])
+while not it.finished:
+    print(it[0],"<",it.index,">")
+    it.iternext()
+```
+```
+0 < 0 >
+1 < 1 >
+2 < 2 >
+3 < 3 >
+4 < 4 >
+5 < 5 >
+6 < 6 >
+7 < 7 >
+8 < 8 >
+9 < 9 >
+```
+- 使用迭代器迭代的时候，输出元素的顺序是不变的，但是元素的位置会发生改变
+- 比如上面两例，使用f_index和c_index输出元素都是一样的，但是他们在数组里面的位置发生了改变
+- 应该是一种灵活遍历数组的方式，具体作用有待研究
 
 ## 广播迭代
 - 如果两个数组是可广播的，那么`nditer`可以同时迭代它们
@@ -941,6 +1105,10 @@ print(a)
 |rollaxis|向后滚动指定的轴|
 |swapaxes|对换数组的两个轴|
 
+
+### numpy.rollaxis
+
+
 ### numpy.rollaxis
 - `axis`表示要向后滚动的轴的数量
 - `start`表示滚动到特定的位置
@@ -963,11 +1131,99 @@ print(b)
  [4 9]]
 ```
 
-- 按列roll，因为`axis`为1，所以每次只roll一列
-- 而且如果想roll二维数组，`axis`最多为1，三维最多为2，以此类推
+```python
+import numpy as np
+ 
+# 创建了三维的 ndarray
+a = np.arange(12).reshape(3,2,2)
+ 
+print ('原数组：')
+print (a)
+print ('获取数组中一个值：')
+print(np.where(a==10))   
+print(a[2,1,0])  # 为 10
+print ('\n')
+
+# 将轴 2 滚动到轴 0（宽度到深度）
+ 
+print ('调用 rollaxis 函数：rollaxis(a,2,0)')
+b = np.rollaxis(a,2,0)
+print (b)
+# 查看元素 a[2,1,0]，即 10 的坐标，变成 [0, 2, 1]
+print(np.where(b==10))   
+print ('\n')
+ 
+# 将轴 2 滚动到轴 1：（宽度到高度）
+ 
+print ('调用 rollaxis 函数：rollaxis(a,2,1)')
+c = np.rollaxis(a,2,1)
+print (c)
+# 查看元素 a[2,1,0]，即 10 的坐标，变成 [2, 0, 1]
+print(np.where(c==10))   
+print ('\n')
+
+print ('调用 rollaxis 函数：rollaxis(a,0,2)')
+d = np.rollaxis(a,0,2)
+print (d)
+# 查看元素 a[2,1,0]，即 10 的坐标，变成 [1, 2, 0]
+print(np.where(d==10))   
+print ('\n')
+```
+```
+原数组：
+[[[ 0  1]
+  [ 2  3]]
+
+ [[ 4  5]
+  [ 6  7]]
+
+ [[ 8  9]
+  [10 11]]]
+获取数组中一个值：
+(array([2]), array([1]), array([0]))
+10
+
+
+调用 rollaxis 函数：rollaxis(a,2,0)
+[[[ 0  2]
+  [ 4  6]
+  [ 8 10]]
+
+ [[ 1  3]
+  [ 5  7]
+  [ 9 11]]]
+(array([0]), array([2]), array([1]))
+
+
+调用 rollaxis 函数：rollaxis(a,2,1)
+[[[ 0  2]
+  [ 1  3]]
+
+ [[ 4  6]
+  [ 5  7]]
+
+ [[ 8 10]
+  [ 9 11]]]
+(array([2]), array([0]), array([1]))
+
+
+调用 rollaxis 函数：rollaxis(a,0,2)
+[[[ 0  1]
+  [ 4  5]
+  [ 8  9]]
+
+ [[ 2  3]
+  [ 6  7]
+  [10 11]]]
+(array([1]), array([2]), array([0]))
+
+```
 
 ### numpy.swapaxes
-- <font color=#3300FF>不会</font>
+- 交换轴
+
+### numpy.transpose
+- 转置
 
 ## 修改数组维度
 |维度|描述|

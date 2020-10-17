@@ -3,6 +3,8 @@
 * [Numpy](python/numpy)
 * [计算机网络](computer_network/计算机网络)
 * [密码学导论](cryption/密码学导论)
+* [openssl](ctf/openssl)
 * [ctf-crypto](ctf/write_up/crypto_gfsj)
 * [ctf-web](ctf/write_up/web_wp_gfsj)
 * [ctf-web-CG](ctf/write_up/web_writeup)
+* [ctf-misc-gfsj](ctf/write_up/misc_gfsj)

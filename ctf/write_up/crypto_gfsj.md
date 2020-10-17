@@ -107,6 +107,7 @@ print(flag)
      2. pubkey.pem
 2. 点击flag.enc，没什么反应，但是猜的出来应该是rsa解密后得到flag
 3. 点击pubkey.pem，进firefox，看到
+
 ```
 -----BEGIN PUBLIC KEY-----
 MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAMJjauXD2OQ/+5erCQKPGqxsC/bNPXDr
@@ -165,19 +166,13 @@ python rsatool.py -f PEM -o private.pem -e 65537 -p 2751278603513489281732851743
 - 得到
 ```
 Using (p, q) to initialise RSA instance
-
 n =
 c2636ae5c3d8e43ffb97ab09028f1aac6c0bf6cd3d70ebca281bffe97fbe30dd
-
 e = 65537 (0x10001)
-
 d =
 1806799bd44ce649122b78b43060c786f8b77fb1593e0842da063ba0d8728bf1
-
 p = 275127860351348928173285174381581152299 (0xcefbb2cf7e18a98ebedc36e3e7c3b02b)
-
 q = 319576316814478949870590164193048041239 (0xf06c28e91c8922b9c236e23560c09717)
-
 Saving PEM as private.pem
 ```
 

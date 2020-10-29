@@ -805,7 +805,6 @@ for j in range(1,10000):
     q=((e*dq-1)//j)+1
     if s1 in str(hex(q)):
         break
-
 for i in range(1,100000):
     p=((e*dp-1)//i)+1
     if invert(q,p)==qinv:
@@ -818,12 +817,16 @@ print(q)
 p=12883429939639100479003058518523248493821688207697138417834631218638027564562306620214863988447681300666538212918572472128732943784711527013224777474072569
 q=12502893634923161599824465146407069882228513776947707295476805997311776855879024002289593598657949783937041929668443115224477369136089557911464046118127387
 ```
+
 - 丢到rsatool里面生成私钥PEM文件
+
 ```
 python rsatool.py -f PEM -o private.pem -p 12883429939639100479003058518523248493821688207697138417834631218638027564562306620214863988447681300666538212918572472128732943784711527013224777474072569
 -q 12502893634923161599824465146407069882228513776947707295476805997311776855879024002289593598657949783937041929668443115224477369136089557911464046118127387
 ```
+
 - 生成私钥，利用openssl求解
+
 ```
 openssl rsautl -decrypt -in flag.enc -inkey private.pem
 ```
@@ -949,4 +952,121 @@ def common_modulus(n, e1, e2, c1, c2):
 ```
 - 解得flag`flag{interesting_rsa}`
 
-# 
+# safer_than_rot_13
+- https://quipqiup.com/
+
+# 工控安全取证
+- 学习到了很多东西
+- 首先，按照题目描述，下载下来的内容应该再wireshark中查看，把log文件改成pcapng
+- 查看后发现是一堆TCP协议文件，且192.168.0.9是被攻击的
+- 但是仔细看发现每次扫描攻击前，黑客都会发一个ICMP的请求，结合计算机网络的知识，大概猜出这个人每次扫描的时候都PING了一下靶机
+- 那么直接查看ICMP的报文
+- 发现刚刚好4组
+- 那就第四组一个个试咯，没办法，毕竟靶机没回复了
+- 得到flag`flag{155989}`
+
+# cr2-many-time-secrets
+- 掌握多字节异或异或加密方式的破解方法，这题是已知部分明文攻击
+- 异或加密的原理就是：
+  - m xor key =c
+  - c xor key =m
+- https://www.meiwen.com.cn/subject/plhwzftx.html
+- https://www.cnblogs.com/Jlay/p/Xor.html
+- 这里使用cribdrag工具可解
+- 得到flag`ALEXCTF{HERE_GOES_THE_KEY}`
+
+# 工业协议分析一
+- 两种方式进行分析
+## 普通做法
+- wireshark打开文件，发现有很多MMS、COTP、TCP协议
+- 对协议进行分类，在TCP中找到一个长度很离谱的报文
+- 点开后发现里面竟然有base64编码的图片
+- 取出之后丢到网站上解出flag
+## 标准做法
+- Linux下wget下载数据包，使用greg指令找flag的内容
+```
+grep -a "flag" 1.pcap
+```
+- 找到很多txt，但是都没有用
+- 试试其他类型，比如：`jpg,png,zip,rar,flag`
+- 找到有png的内容，是base64编码的
+- python解码恢复图片
+```python
+from base64 import b64decode
+a="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"
+f=open('flag.png','wb')
+f.write(b64decode(a))
+f.close()
+```
+- VSCode中查看不到，复制到windows中查看
+- 得到flag
+
+# enc
+- 打开就是一堆二进制
+- 二进制借出来之后看到最后有等号，base64解码
+- 解码后得到摩斯电码，再解码得到flag
+
+# 说我作弊需要证据
+- 最难的题目之一，需要搞懂TCP协议的内容
+- https://blog.csdn.net/zz_Caleb/article/details/89316034
+1. SEQ是最后的字符顺序 
+2. DATA是需要解密的密文 
+3. SIG是RSA的签名，利用Alice的公钥对数据进行一次签名验证 DATA是发送给Bob的实际密文,使用Bob的公钥对DATA进行了加密。所以先使用factor-db并解出私钥来解密数据。
+- 流程：
+  1. Alice发出报文，并且生成验证
+  2. Bob收到报文，用私钥解密
+  3. 解密后的数据需要验证，验证通过则留下，不通过则丢弃
+```python
+from base64 import b64decode,b64encode
+from libnum import n2s
+from gmpy2 import invert
+from Crypto.PublicKey import RSA
+f=open('1.txt','r')
+a=[]
+b=[]
+for i in f.readlines():
+    a.append(i[:-1])
+for i in a:
+    b.append(b64decode(i))
+Alice_n=0x53a121a11e36d7a84dde3f5d73cf
+Bob_n=0x99122e61dc7bede74711185598c7
+e=0x10001
+n1=int(Alice_n)
+n2=int(Bob_n)
+p1=38456719616722997
+q1=44106885765559411
+p2=49662237675630289
+q2=62515288803124247
+d1=int(invert(e,(p1-1)*(q1-1)))
+d2=int(invert(e,(p2-1)*(q2-1)))
+A=RSA.construct((n1,e,d1))
+B=RSA.construct((n2,e,d2))
+flag={}
+for i in b:
+    i=str(i)
+    seq=int(i.split(';')[0].split(' ')[2])
+    data=int(i.split(';')[1].split('0x')[1].rstrip('L'),base=16)
+    sig=int(i.split(';')[2].split('0x')[1].rstrip('L'),base=16)
+    m=B.decrypt(data)
+    signcheck=A.sign(m,'')[0]
+    if signcheck==sig:
+        flag[seq]=n2s(m)
+dic=sorted(flag.items(),key = lambda item: item[0])
+f=''
+for i in dic:
+    f+=i[1].decode()
+print(f)
+```
+- 学会使用RSA模块的：
+  1. construct
+  2. sign：用于验证数据
+- 程序分为几个流程（包括前期操作的流程）
+  1. 首先打开wireshark，都是TCP的报文，开启追踪流保存数据
+  2. 打开文件读写，把内容base64解密
+  3. 对每一行的内容（大概长这样`'SEQ = 27; DATA = 0x3cda4bf9b498a68d4cb65bff6fc0L; SIG = 0x1cc712adfa8e3895148458fad2c1L;'`）进行分出
+  4. 分出之后，解密data，验证sig，可行则把seq和m加入flag
+  5. 对字典进行排序，关键字取seq
+  6. 输出字典
+  7. 注意使用RSA模块的话很多结果都是byte类型的，需要转形式才可以继续操作
+- 最后得到flag`flag{n0th1ng_t0_533_h3r3_m0v3_0n}`
+

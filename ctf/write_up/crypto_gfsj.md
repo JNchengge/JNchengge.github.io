@@ -444,3 +444,509 @@ r5yG lp9I BjM tFhBT6uh y7iJ QsZ bhM
 ```
 - 这个东西，就很神奇，因为，这个是键盘密码，一般3~5个一组，在键盘上围住的那个字母就是答案
 - 最后找到：TONGYUAN
+
+# 工业协议分析2
+- wireshark打开下载的文件
+- 在UDP中找到几个长度很独特的报文：147、173、179
+- 其中，147的报文中含有flag，而173和179的报文中含有许多16进制数
+- 将16进制数取出
+```
+6c61677b37466f4d3253746b6865507a
+666c61677b37466f4d3253746b6865507a7d
+```
+- 16进制转换之后就得到`flag{7FoM2StkhePz}`
+
+# sherlock
+- 打开txt后发现是完整的小说，仔细看发现其中有一些字母会很不正常的大写
+- 用python把这些字母取下来
+```python
+with open('ctf/code/sherlock.txt','r') as f:
+    text=f.read()
+    s=''
+    for i in text:
+        if i>='A' and i<='Z':
+            s+=i
+    print(s)
+```
+- 得到
+```
+ZEROONEZEROZEROZEROZEROONEZEROZEROONEZEROZEROONEZEROZEROONEZEROONEZEROONEZEROONEZEROZEROZEROONEZEROONEZEROZEROONEONEZEROONEZEROZEROZEROZEROONEONEZEROONEZEROONEZEROONEZEROZEROZEROONEZEROZEROZEROONEONEZEROZEROONEONEONEONEZEROONEONEZEROONEONEZEROONEZEROZEROZEROZEROZEROONEONEZEROZEROZEROONEZEROONEONEZEROZEROONEZEROZEROZEROZEROONEONEZEROZEROONEONEZEROONEZEROONEONEONEONEONEZEROZEROONEONEZEROZEROZEROONEZEROONEONEZEROONEONEONEZEROZEROONEZEROONEONEONEONEONEZEROONEONEONEZEROZEROZEROZEROZEROONEONEZEROONEONEZEROZEROZEROZEROONEONEZEROONEZEROZEROZEROZEROONEONEZEROZEROZEROONEZEROONEONEZEROONEONEONEZEROZEROONEZEROONEONEONEONEONEZEROZEROONEONEZEROONEZEROONEZEROZEROONEONEZEROZEROZEROONEZEROZEROONEONEZEROONEONEONEZEROZEROONEONEZEROZEROONEONEZEROONEONEONEONEONEZEROONE
+```
+- 显然是二进制了，替换得到：
+```
+010000100100100101010100010100110100001101010100010001100111101101101000001100010110010000110011010111110011000101101110010111110111000001101100001101000011000101101110010111110011010100110001001101110011001101111101
+```
+- 每8bit对应一个字节，使用python代码跑一下
+```python
+with open('ctf/code/sherlock.txt','r') as f:
+    text=f.read()
+    s=''
+    for i in text:
+        if i>='A' and i<='Z':
+            s+=i
+    #print(s)
+s='010000100100100101010100010100110100001101010100010001100111101101101000001100010110010000110011010111110011000101101110010111110111000001101100001101000011000101101110010111110011010100110001001101110011001101111101'
+a=[s[i*8:i*8+8] for i in range(len(s)//8)]
+flag=''
+for i in a:
+    flag+=chr(int(i,base=2))
+print(flag)
+```
+- 得到flag`BITSCTF{h1d3_1n_pl41n_5173}`
+
+# cr3-what-is-this-encryption
+- 题目直接给出了p,q,e,c，就差直接把答案给出来了
+- 当成是python解rsa的练习
+```python
+from gmpy2 import invert
+import libnum
+p=0xa6055ec186de51800ddd6fcbf0192384ff42d707a55f57af4fcfb0d1dc7bd97055e8275cd4b78ec63c5d592f567c66393a061324aa2e6a8d8fc2a910cbee1ed9 
+q=0xfa0f9463ea0a93b929c099320d31c277e0b0dbc65b189ed76124f5a1218f5d91fd0102a4c8de11f28be5e4d0ae91ab319f4537e97ed74bc663e972a4a9119307 
+e=0x6d1fdab4ce3217b3fc32c9ed480a31d067fd57d93a9ab52b472dc393ab7852fbcb11abbebfd6aaae8032db1316dc22d3f7c3d631e24df13ef23d3b381a1c3e04abcc745d402ee3a031ac2718fae63b240837b4f657f29ca4702da9af22a3a019d68904a969ddb01bcf941df70af042f4fae5cbeb9c2151b324f387e525094c41 
+c=0x7fe1a4f743675d1987d25d38111fae0f78bbea6852cba5beda47db76d119a3efe24cb04b9449f53becd43b0b46e269826a983f832abb53b7a7e24a43ad15378344ed5c20f51e268186d24c76050c1e73647523bd5f91d9b6ad3e86bbf9126588b1dee21e6997372e36c3e74284734748891829665086e0dc523ed23c386bb520
+p=int(p)
+q=int(q)
+n=p*q
+phi_n=(p-1)*(q-1)
+e=int(e)
+c=int(c)
+d=invert(e,phi_n)
+m=pow(c,d,n)
+print(libnum.n2s(m))
+```
+- 其中两个比较基本的函数`invert()`和`n2s()`一定要会用，另外libnum只支持python2
+- 得到flag`ALEXCTF{RS4_I5_E55ENT1AL_T0_D0_BY_H4ND}`
+
+# Decrypt-the-Message
+- 诗文密码，原理极其复杂，直接跑别人的代码解`poemcode.py`
+- 原理：http://wmbriggs.com/post/1001/
+- 注意：使用poemcode的时候，`Note that the poem, msg and cipher has to be alphabetic letters only. No commatas, dots, whatgives.`
+- 得到flag`ifyouthinkcryptographyistheanswertoyourproblemthenyoudonotknowwhatyourproblemisabcdefghijklmnopqrstu`
+
+# OldDriver
+- Linux`unzip`解压缩得到一个enc.txt文件，打开看到
+```
+[{"c": 7366067574741171461722065133242916080495505913663250330082747465383676893970411476550748394841437418105312353971095003424322679616940371123028982189502042, "e": 10, "n": 25162507052339714421839688873734596177751124036723831003300959761137811490715205742941738406548150240861779301784133652165908227917415483137585388986274803},
+{"c": 21962825323300469151795920289886886562790942771546858500842179806566435767103803978885148772139305484319688249368999503784441507383476095946258011317951461, "e": 10, "n": 23976859589904419798320812097681858652325473791891232710431997202897819580634937070900625213218095330766877190212418023297341732808839488308551126409983193},
+{"c": 6569689420274066957835983390583585286570087619048110141187700584193792695235405077811544355169290382357149374107076406086154103351897890793598997687053983, "e": 10, "n": 18503782836858540043974558035601654610948915505645219820150251062305120148745545906567548650191832090823482852604346478335353784501076761922605361848703623},
+{"c": 4508246168044513518452493882713536390636741541551805821790338973797615971271867248584379813114125478195284692695928668946553625483179633266057122967547052, "e": 10, "n": 23383087478545512218713157932934746110721706819077423418060220083657713428503582801909807142802647367994289775015595100541168367083097506193809451365010723},
+{"c": 22966105670291282335588843018244161552764486373117942865966904076191122337435542553276743938817686729554714315494818922753880198945897222422137268427611672, "e": 10, "n": 31775649089861428671057909076144152870796722528112580479442073365053916012507273433028451755436987054722496057749731758475958301164082755003195632005308493},
+{"c": 17963313063405045742968136916219838352135561785389534381262979264585397896844470879023686508540355160998533122970239261072020689217153126649390825646712087, "e": 10, "n": 22246342022943432820696190444155665289928378653841172632283227888174495402248633061010615572642126584591103750338919213945646074833823905521643025879053949},
+{"c": 1652417534709029450380570653973705320986117679597563873022683140800507482560482948310131540948227797045505390333146191586749269249548168247316404074014639, "e": 10, "n": 25395461142670631268156106136028325744393358436617528677967249347353524924655001151849544022201772500033280822372661344352607434738696051779095736547813043},
+{"c": 15585771734488351039456631394040497759568679429510619219766191780807675361741859290490732451112648776648126779759368428205194684721516497026290981786239352, "e": 10, "n": 32056508892744184901289413287728039891303832311548608141088227876326753674154124775132776928481935378184756756785107540781632570295330486738268173167809047},
+{"c": 8965123421637694050044216844523379163347478029124815032832813225050732558524239660648746284884140746788823681886010577342254841014594570067467905682359797, "e": 10, "n": 52849766269541827474228189428820648574162539595985395992261649809907435742263020551050064268890333392877173572811691599841253150460219986817964461970736553},
+{"c": 13560945756543023008529388108446940847137853038437095244573035888531288577370829065666320069397898394848484847030321018915638381833935580958342719988978247, "e": 10, "n": 30415984800307578932946399987559088968355638354344823359397204419191241802721772499486615661699080998502439901585573950889047918537906687840725005496238621}]
+```
+- 有很多密文，n，以及他们都通用一个e
+- 尝试分解n，发现都不可以分解
+- 结合rsa加密原理我们可以知道，m^e=c(mod n)，且因为n无法分解，都是素数，所以所有n两两互素
+- 也就是说，m^e可以使用中国剩余定理解出来
+- python代码实现,注意开头加一个`# -*- coding: UTF-8 -*-`不然python2识别不出中文
+
+```python
+# -*- coding: UTF-8 -*-
+import libnum
+a=[{"c": 7366067574741171461722065133242916080495505913663250330082747465383676893970411476550748394841437418105312353971095003424322679616940371123028982189502042, "e": 10, "n": 25162507052339714421839688873734596177751124036723831003300959761137811490715205742941738406548150240861779301784133652165908227917415483137585388986274803},
+{"c": 21962825323300469151795920289886886562790942771546858500842179806566435767103803978885148772139305484319688249368999503784441507383476095946258011317951461, "e": 10, "n": 23976859589904419798320812097681858652325473791891232710431997202897819580634937070900625213218095330766877190212418023297341732808839488308551126409983193},
+{"c": 6569689420274066957835983390583585286570087619048110141187700584193792695235405077811544355169290382357149374107076406086154103351897890793598997687053983, "e": 10, "n": 18503782836858540043974558035601654610948915505645219820150251062305120148745545906567548650191832090823482852604346478335353784501076761922605361848703623},
+{"c": 4508246168044513518452493882713536390636741541551805821790338973797615971271867248584379813114125478195284692695928668946553625483179633266057122967547052, "e": 10, "n": 23383087478545512218713157932934746110721706819077423418060220083657713428503582801909807142802647367994289775015595100541168367083097506193809451365010723},
+{"c": 22966105670291282335588843018244161552764486373117942865966904076191122337435542553276743938817686729554714315494818922753880198945897222422137268427611672, "e": 10, "n": 31775649089861428671057909076144152870796722528112580479442073365053916012507273433028451755436987054722496057749731758475958301164082755003195632005308493},
+{"c": 17963313063405045742968136916219838352135561785389534381262979264585397896844470879023686508540355160998533122970239261072020689217153126649390825646712087, "e": 10, "n": 22246342022943432820696190444155665289928378653841172632283227888174495402248633061010615572642126584591103750338919213945646074833823905521643025879053949},
+{"c": 1652417534709029450380570653973705320986117679597563873022683140800507482560482948310131540948227797045505390333146191586749269249548168247316404074014639, "e": 10, "n": 25395461142670631268156106136028325744393358436617528677967249347353524924655001151849544022201772500033280822372661344352607434738696051779095736547813043},
+{"c": 15585771734488351039456631394040497759568679429510619219766191780807675361741859290490732451112648776648126779759368428205194684721516497026290981786239352, "e": 10, "n": 32056508892744184901289413287728039891303832311548608141088227876326753674154124775132776928481935378184756756785107540781632570295330486738268173167809047},
+{"c": 8965123421637694050044216844523379163347478029124815032832813225050732558524239660648746284884140746788823681886010577342254841014594570067467905682359797, "e": 10, "n": 52849766269541827474228189428820648574162539595985395992261649809907435742263020551050064268890333392877173572811691599841253150460219986817964461970736553},
+{"c": 13560945756543023008529388108446940847137853038437095244573035888531288577370829065666320069397898394848484847030321018915638381833935580958342719988978247, "e": 10, "n": 30415984800307578932946399987559088968355638354344823359397204419191241802721772499486615661699080998502439901585573950889047918537906687840725005496238621}]
+N=[item['n'] for item in a]
+C=[item['c'] for item in a]
+M=1
+Mi=[]
+Mi_=[]
+for i in N:
+    M*=i
+for i in N:
+    Mi.append(M//i)
+for i in range(10):
+    Mi_.append(libnum.modular.invmod(Mi[i],N[i]))
+m_pow_10=0
+for i in range(10):
+    m_pow_10+=C[i]*Mi[i]*Mi_[i]
+m=854589733786598088127099154138504953368140761371523704656865879247874533963639770706597129057405
+print(libnum.n2s(m))
+```
+```python
+import gmpy2
+m=207767069011310615382005496956699939002724661123322994221751166142695274160861910347361276996042799742560876960023725026707962638166575129135440766865100701316764816670483379054343205951075808999752703332882348125629896107658067054751367722901224219091040510838592389076377332778179355096997243543295505018634634561572451967022510155507636716076240560673569886607358154881030549395513906366427051905370416043155267775715988736634788617468194185922049327782963634886497288418641621769381790420751978088082773658829633825745189702805012204673024347719875566559379781189582566329675268632721978707602317933712815171019007700996700182017336704427281863111341960851776549837229695668747526286721345451749979009955616040973254276606709769043027544927251024901061553394041775684108915439050273468693088021984899729089503269397596389715537835361719103933892287450966618345853058411623620115907347761036477799240200802958348678085348640790171222722538999911355478515625
+a=gmpy2.iroot(m,10)
+print(a)
+```
+- 这个m是用gmpy2的iroot()解出来的，最后使用n2s()，得到flag`flag{wo0_th3_tr4in_i5_leav1ng_g3t_on_it}`
+
+# 你猜猜
+- 学会识别文件头`504B`，是zip的文件头
+- 把16进制复制带HxD中，另存为zip文件
+- 打开zip文件，猜密码为123456
+- 得到flag`daczcasdqwdcsdzasd`
+
+# wtc_rsa_bbq
+- 学会使用RsaCtfTool和wsl的文件移动
+- 使用WinHex打开cry300文件，发现zip头`504B`
+- wsl移动文件到RsaCtfTool目录下
+- 直接使用RsaCtfTool解密发现不行，可能是n太大了，使用openssl查看n的信息
+```
+openssl rsa -pubin -in key.pem -text -modulus
+```
+- 得到
+```
+RSA Public-Key: (8587 bit)
+```
+- 太大了，尝试使用费马攻击
+```
+python3 RsaCtfTool.py --publickey key.pem --uncipherfile cipher.bin --attack fermat
+```
+- 得到
+```
+flag{how_d0_you_7urn_this_0n?}
+```
+
+# ecb_is_easy_as_123
+- 学会位图文件的基础
+- 位图文件包含头和数据两部分
+- 位图文件的头是固定的，数据则不同，但是因为加密之后，头被破坏，导致无法查看位图文件
+- 所以给它接一个新的头上去
+```python
+from Crypto.Util.number import long_to_bytes
+f=open('ctf/code/ecb.bmp','rb')
+data=f.read()
+pre=0x424d76483f00000000007600000028000000000f000070080000010004000000000000483f00000000000000000000000000000000000000000000008000008000000080800080000000800080008080000080808000c0c0c0000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00ffffffffffffffffffffL
+out=long_to_bytes(pre)+data[128:]
+f.close()
+with open('out.bmp','w') as o:
+    o.write(out)
+```
+- 注意这里要python2
+- 打开out.bmp，就可以看到flag了
+- `flag{no_penguin_here}`
+
+# fanfie
+- 脑洞题，先看题目
+```
+MZYVMIWLGBL7CIJOGJQVOA3IN5BLYC3NHI
+```
+- 没什么头绪，但是感觉跟base32有关
+- 将`bitsctf`base32加密一下
+```
+MJUXI43DORTA====
+```
+- 两者开头比对，发现有共同之处，而且有些字母对是相同的，所以猜测是单表代换或者仿射密码
+- 试试仿射密码，把(a,b)对爆出来发现是(13,4)
+- 因为是base32的仿射，所以我们的字母表要用base32的字母表，即`A~Z,2~7`
+```python
+from base64 import b32decode,b32encode
+from gmpy2 import invert
+#print(b32encode('BITSCTF'))
+cipher="MZYVMIWLGBL7CIJOGJQVOA3IN5BLYC3NHI"
+"""for i in range(27): #暴力破解a,b
+    for j in range(27):
+        if gcd(i,32)==1:
+            if (i*21+j)%32==21 and (i*3+j)%32==11 and (i*9+j)%32==25 and (i*4+j)%32==24:
+                print(i,j)"""
+a=13
+b=4
+s="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 2 3 4 5 6 7"
+alphabet=s.split(' ')
+flag=''
+for ch in cipher:
+    flag+=alphabet[((alphabet.index(ch)-b)*invert(a,32))%32]
+print(flag)
+```
+- 得到`IJEVIU2DKRDHWUZSKZ4VSMTUN5RDEWTNPU`
+- 再base32解码一下，注意补充=
+```
+BITSCTF{S2VyY2tob2Zm}
+```
+
+# cr4-poor-rsa
+- 直接使用RsaCtfTool工具解不了
+- 那就根据公钥解出私钥文件然后在线解就好了
+- 两个基础指令
+```
+openssl rsa -pubin -text -modulus -in warmup -in key.pub
+```
+
+```
+python rsatool,py -f PEM -o private.pem -p XXX -q XXX
+```
+- 最后得到private.pem文件就把flag.b64的内容丢去网站解密就好了
+- ALEXCTF{SMALL_PRIMES_ARE_BAD}
+
+# banana-princess
+- 很好的一题学习题
+- 首先先下载pdf，发现是打不开的，很正常，因为加了密
+- 然后分析一下加密方式，一般的PDF开头都会有`%PDF-版本号`
+- 而加密后的pdf是`%CQS-1.5`
+- P->C,13个;D->Q,13个;F->S,13个，所以猜测是ROT13
+- Linux中使用tr将文件中的匹配字符串替换
+```
+cat 9e45191069704531accd66f1ee1d5b2b.pdf | tr 'A-Za-z' 'N-ZA-Mn-za-m' > new.pdf
+```
+- tr后面第一个字符串为搜索，后面的字符串则是用来和前面的字符串一一替换，这里的两个字符串替换规则符合ROT13，`>`表示输出到一个新的文件
+- 把new弄到windows中查看，发现flag被遮挡了
+- 这个时候，就需要`pdf to html`了，在网站上整一整，得到flag
+- `BITSCTF{save_the_kid}`
+
+# shanghai
+- 根据维吉尼亚密码的分析方法，使用python尝试找密钥长度
+```python
+f=re.finditer('bju',t2)
+for i in f:
+    print(i)
+```
+- 找到最大公因数为22
+- 尝试11和22的密钥长度
+- 直接在网站上解决
+- 解出明文
+
+the quick brown fox jumps over 13 lazy dogs. history
+the first well-documented description of a polyalphabetic cipher was formulated by leon battista alberti around 1467 and used a metal cipher disc to switch between cipher alphabets. alberti's system only switched alphabets after several words, and switches were indicated by writing the letter of the corresponding alphabet in the ciphertext. later, in 1508, johannes trithemius, in his work poligraphia, invented the tabula recta, a critical component of the vigenère cipher. the trithemius cipher, however, only provided a progressive, rigid and predictable system for switching between cipher alphabets.[citation needed]
+
+what is now known as the vigenère cipher was originally described by giovan battista bellaso in his 1553 book la cifra del sig. giovan battista bellaso.[4] he built upon the tabula recta of trithemius but added a repeating "countersign" (a key) to switch cipher alphabets every letter. whereas alberti and trithemius used a fixed pattern of substitutions, bellaso's scheme meant the pattern of substitutions could be easily changed, simply by selecting a new key. keys were typically single words or short phrases, known to both parties in advance, or transmitted "out of band" along with the message. bellaso's method thus required strong security for only the key. as it is relatively easy to secure a short key phrase, such as by a previous private conversation, bellaso's system was considerably more secure.[citation needed]
+
+blaise de vigenère published his description of a similar but stronger autokey cipher before the court of henry iii of france, in 1586.[5] later, in the 19th century, the invention of bellaso's cipher was misattributed to vigenère. david kahn, in his book, the codebreakers lamented the misattribution by saying that history had "ignored this important contribution and instead named a regressive and elementary cipher for him [vigenère] though he had nothing to do with it".[6]
+
+the vigenère cipher gained a reputation for being exceptionally strong. noted author and mathematician charles lutwidge dodgson (lewis carroll) called the vigenère cipher unbreakable in his 1868 piece "the alphabet cipher" in a children's magazine. in 1917, scientific american described the vigenère cipher as "impossible of translation".[7][8] that reputation was not deserved. charles babbage is known to have broken a variant of the cipher as early as 1854 but failed to publish his work.[9] kasiski entirely broke the cipher and published the technique in the 19th century, but even earlier, some skilled cryptanalysts could occasionally break the cipher in the 16th century.[6]
+
+
+cryptographic slide rule used as a calculation aid by the swiss army between 1914 and 1940.
+the vigenère cipher is simple enough to be a field cipher if it is used in conjunction with cipher disks.[10] the confederate states of america, for example, used a brass cipher disk to implement the vigenère cipher during the american civil war. the confederacy's messages were far from secret, and the union regularly cracked its messages. throughout the war, the confederate leadership primarily relied upon three key phrases: "manchester bluff", "complete victory" and, as the war came to a close, "come retribution".[11]
+
+gilbert vernam tried to repair the broken cipher (creating the vernam–vigenère cipher in 1918), but no matter what he did, the cipher was still vulnerable to cryptanalysis. vernam's work, however, eventually led to the one-time pad, a theoretically-unbreakable cipher.[12]
+
+description
+
+the vigenère square or vigenère table, also known as the tabula recta, can be used for encryption and decryption.
+in a caesar cipher, each letter of the alphabet is shifted along some number of places. for example, in a caesar cipher of shift 3, a would become d, b would become e, y would become b and so on. the vigenère cipher has several caesar ciphers in sequence with different shift values.
+
+to encrypt, a table of alphabets can be used, termed a tabula recta, vigenère square or vigenère table. it has the alphabet written out 26 times in different rows, each alphabet shifted cyclically to the left compared to the previous alphabet, corresponding to the 26 possible caesar ciphers. at different points in the encryption process, the cipher uses a different alphabet from one of the rows. the alphabet used at each point depends on a repeating keyword.[citation needed]
+
+for example, suppose that the plaintext to be encrypted is
+
+attackatdawn.
+the person sending the message chooses a keyword and repeats it until it matches the length of the plaintext, for example, the keyword "lemon":
+
+lemonlemonle
+each row starts with a key letter. the rest of the row holds the letters a to z (in shifted order). although there are 26 key rows shown, a code will use only as many keys (different alphabets) as there are unique letters in the key string, here just 5 keys: {l, e, m, o, n}. flag, '{' and 'vigenereisveryeasyhuh' and '}' for successive letters of the message, successive letters of the key string will be taken and each message letter enciphered by using its corresponding key row. the next letter of the key is chosen, and that row is gone along to find the column heading that matches the message character. the letter at the intersection of [key-row, msg-col] is the enciphered letter.
+
+for example, the first letter of the plaintext, a, is paired with l, the first letter of the key. therefore, row l and column a of the vigenère square are used, namely l. similarly, for the second letter of the plaintext, the second letter of the key is used. the letter at row e and column t is x. the rest of the plaintext is enciphered in a similar fashion:
+
+plaintext:	attackatdawn
+key:	lemonlemonle
+ciphertext:	lxfopvefrnhr
+decryption is performed by going to the row in the table corresponding to the key, finding the position of the ciphertext letter in that row and then using the column's label as the plaintext. for example, in row l (from lemon), the ciphertext l appears in column a, which is the first plaintext letter. next, row e (from lemon) is gone to, the ciphertext x is located that is found in column t. thus t is the second plaintext letter.
+
+- 找到flag{vigenereisveryeasyhuh}
+
+ # equation-2
+- 离谱题目，数学原理有待提升
+```python
+from gmpy2 import invert
+s1="""3acf6684e41176a5b673056b9cd23bd832dc017a57509d471b"""
+s2="""00D5A225C0D41B16699C4471570EECD3DD7759736D5781AA7710B31B4A46E441D386DA1345BC97D1AA913F853F850F6D4684A80E6067FB71CF213B276C2CBAED59"""
+s3="""1338C593D3B5428CE978BED7A553527155B3D138AEAC084020C0C67F54B953015E55F60A5D31386505E02E6122DAD7DB0A05ECB552E448B347ADC2C9170FA2F3"""
+s4="""00d5c8d6dc583ecdf3c321663ba32ae4ab1c9a2ded6702691993184209e93914f0d5adf415634788d5919d84a8d77429959d40fba47b29cf70b943124217c9a431"""
+dp=int(s2,base=16)
+dq=int(s3,base=16)
+qinv=int(s4,base=16)
+e=65537
+for j in range(1,10000):
+    q=((e*dq-1)//j)+1
+    if s1 in str(hex(q)):
+        break
+for i in range(1,100000):
+    p=((e*dp-1)//i)+1
+    if invert(q,p)==qinv:
+        break
+print(p)
+print(q)
+```
+- 数学原理：CRT-RSA参数：dp,dq,coefficient
+- 还有PEM文件的一般格式，可以在RFC中查看，也可以在我的一堆书签中查看，有待整理
+- 首先记住三个重要关系
+```
+e*dp=1 mod(p-1) dp=d mod(p-1)
+e*dq=1 mod(q-1) dq=d mod(q-1)
+qi=q^-1 mod(p) qi*q=1 mod(p)
+```
+- 那么，就有
+```
+p=((e*dp-1)//k)+1
+q=((e*dq-1)//k)+1
+qi*q-1=k*p
+```
+- 根据对PEM16进制的解析，我们得到，注意我们要取02开头的数据，02后面的一位是长度，也要找长度对应的
+```
+q="""3acf6684e41176a5b673056b9cd23bd832dc017a57509d471b"""
+dp="""00D5A225C0D41B16699C4471570EECD3DD7759736D5781AA7710B31B4A46E441D386DA1345BC97D1AA913F853F850F6D4684A80E6067FB71CF213B276C2CBAED59"""
+dq="""1338C593D3B5428CE978BED7A553527155B3D138AEAC084020C0C67F54B953015E55F60A5D31386505E02E6122DAD7DB0A05ECB552E448B347ADC2C9170FA2F3"""
+qi="""00d5c8d6dc583ecdf3c321663ba32ae4ab1c9a2ded6702691993184209e93914f0d5adf415634788d5919d84a8d77429959d40fba47b29cf70b943124217c9a431"""
+```
+- 这里q是不完整的，需要还原，就根据上面的三个方程
+- 利用字符串匹配可以找到q，然后再根据qi算p
+```python
+from gmpy2 import invert
+s1="""3acf6684e41176a5b673056b9cd23bd832dc017a57509d471b"""
+s2="""00D5A225C0D41B16699C4471570EECD3DD7759736D5781AA7710B31B4A46E441D386DA1345BC97D1AA913F853F850F6D4684A80E6067FB71CF213B276C2CBAED59"""
+s3="""1338C593D3B5428CE978BED7A553527155B3D138AEAC084020C0C67F54B953015E55F60A5D31386505E02E6122DAD7DB0A05ECB552E448B347ADC2C9170FA2F3"""
+s4="""00d5c8d6dc583ecdf3c321663ba32ae4ab1c9a2ded6702691993184209e93914f0d5adf415634788d5919d84a8d77429959d40fba47b29cf70b943124217c9a431"""
+dp=int(s2,base=16)
+dq=int(s3,base=16)
+qinv=int(s4,base=16)
+e=65537
+for j in range(1,10000):
+    q=((e*dq-1)//j)+1
+    if s1 in str(hex(q)):
+        break
+
+for i in range(1,100000):
+    p=((e*dp-1)//i)+1
+    if invert(q,p)==qinv:
+        break
+print(p)
+print(q)
+```
+- 最后得到
+```
+p=12883429939639100479003058518523248493821688207697138417834631218638027564562306620214863988447681300666538212918572472128732943784711527013224777474072569
+q=12502893634923161599824465146407069882228513776947707295476805997311776855879024002289593598657949783937041929668443115224477369136089557911464046118127387
+```
+- 丢到rsatool里面生成私钥PEM文件
+```
+python rsatool.py -f PEM -o private.pem -p 12883429939639100479003058518523248493821688207697138417834631218638027564562306620214863988447681300666538212918572472128732943784711527013224777474072569
+-q 12502893634923161599824465146407069882228513776947707295476805997311776855879024002289593598657949783937041929668443115224477369136089557911464046118127387
+```
+- 生成私钥，利用openssl求解
+```
+openssl rsautl -decrypt -in flag.enc -inkey private.pem
+```
+- 得到flag`0ctf{Keep_ca1m_and_s01ve_the_RSA_Eeeequati0n!!!}`
+
+# RSA256
+- 简单题
+- 下载gz文件，解压
+```
+gzip -d 1.gz
+```
+- 解压得到两个文件
+  - flllllag.txt
+  - gy.key
+- gy.key可以直接查看
+```
+-----BEGIN PUBLIC KEY-----
+MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKm9THp3YzcKBC/mvsfdyEFgLblCx6Ni
+0bXTcqTQiRLZAgMBAAE=
+-----END PUBLIC KEY-----
+```
+- 原来是公钥，openssl解析
+```
+openssl rsa -pubin -text -modulus -in warmup -in gy.key
+```
+- 得到：A9BD4C7A7763370A042FE6BEC7DDC841602DB942C7A362D1B5D372A4D08912D9
+- python int一下，分解
+```
+p=273821108020968288372911424519201044333
+q=280385007186315115828483000867559983517
+```
+- rsatool生成私钥
+- openssl解密之后flag`flag{_2o!9_CTF_ECUN_}`不对，要去掉下划线
+
+# streamgame2
+- 和srteamgame1一样爆破得到答案
+```python
+def lfsr(R,mask):
+    output = (R << 1) & 0xffffff
+    i=(R&mask)&0xffffff
+    lastbit=0
+    while i!=0:
+        lastbit^=(i&1)
+        i=i>>1
+    output^=lastbit
+    return (output,lastbit)
+mask=0x100002
+key=[]
+f=open('ctf//code//key','rb')
+content=f.read()
+for i in content:
+    key.append(int(i))
+for flag in range(2**27):
+    R=flag
+    tmp=0
+    judge=0
+    for i in range(12):
+        tmp=0
+        for j in range(8):
+            (R,out)=lfsr(R,mask)
+            tmp=(tmp << 1)^out
+        if tmp!=key[i]:
+            judge=0
+            break
+        else:
+            judge=1
+    if judge:
+        break
+print('flag{'+bin(flag)[2:]+'}')
+```
+
+# best_rsa
+- 解析publickey1.pem 和 publickey2.pem可得到e1=117,e2=65537且模数为2047位不可分解
+- 使用共模攻击
+- https://xz.aliyun.com/t/2446
+- 原理：
+  - 当使用同一个模数，e不同的时候，收到两个密文则可以不需要私钥解出原文
+  - 由广义欧几里得除法可知：当gdc(e1,e2)=1,存在s1,s2,使得e1*s1+e2*s2=1
+  - 那么，又有方程组：
+     - m^e=c1 mod(n)
+     - m^e=c2 mod(n)
+  - 就有：
+     - c1^s1=m^(e*s1) mod(n)
+     - c2^s2=m^(e*s2) mod(n)
+     - c1^s1*c2^s2=m(e*s1+e*s2) mod (n)
+     - c1^s1*c2^s2=m mod (n)
+  - 其中，s1,s2不同号，为负数的那个数，需要对应得密文取n的逆元
+- 我的代码
+```python
+from libnum import n2s,s2n
+from gmpy2 import invert,gcdext,powmod
+from math import pow
+n=int(0x67755F890795644EC27E68892B94042C78334C34F9A6D8B6AA488D9B424D64A8B9B2DCC91B1D098A09D7AC4F9A06A4B5267F88F8968B4BAD29235D9A80330845F126B9A865F44C7A77DF72F763F553E99020745F40C8D97F0AB906154FBB1020B588F441F712B2377505B644FE36A78743EE4995B42C7B17B8DF4782EBB595097EE1BE74143261893C4EE2C140DC469E32B17F8AB30E25F07164506B4E79C6B4E3AF5BEA0268427FFB1134FB90A5122729C4EEF17B6D0B12CFBA4E7F14E27AA3C2B4F978E75163242EBD5CBD73829336F9A120E86E25D69CAE0229FDCCEB5B35DC630187B0EEF1532EEC546F4037A6EAB0D0207199B9566011A52F8E9ACD7261)
+e1=117
+e2=65537
+f1=open('cipher1.txt','r')
+f2=open('cipher2.txt','r')
+c1=s2n(f1.read())
+c2=s2n(f2.read())
+_,s1,s2=gcdext(e1,e2)
+s1=30808
+s2=55
+c2_=invert(c2,n)
+m=(powmod(c1,s1,n)*powmod(c2_,s2,n))%n
+print(n2s(m))
+f1.close()
+f2.close()
+```
+- 别人的代码
+```python
+def common_modulus(n, e1, e2, c1, c2):
+    """
+    ref: https://crypto.stackexchange.com/questions/16283/how-to-use-common-modulus-attack
+    ∵gcd(e1,e2)==1,∴由扩展欧几里得算法，存在e1*s1+e2*s2==1
+    ∴m==m^1==m^(e1*s1+e2*s2)==((m^e1)^s1)*((m^e2)^s2)==(c1^s1)*(c2^s2)
+    """
+    assert (libnum.gcd(e1, e2) == 1)
+    _, s1, s2 = gmpy2.gcdext(e1, e2)
+    # 若s1<0，则c1^s1==(c1^-1)^(-s1)，其中c1^-1为c1模n的逆元。
+    m = pow(c1, s1, n) if s1 > 0 else pow(gmpy2.invert(c1, n), -s1, n)
+    m *= pow(c2, s2, n) if s2 > 0 else pow(gmpy2.invert(c2, n), -s2, n)
+    return m % n
+```
+- 解得flag`flag{interesting_rsa}`
+
+# 

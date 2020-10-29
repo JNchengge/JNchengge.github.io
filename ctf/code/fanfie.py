@@ -1,4 +1,4 @@
-from base64 import b32decode,b32encode
+from base64 import b32decode,b32encode,b64decode
 from gmpy2 import invert
 #print(b32encode('BITSCTF'))
 cipher="MZYVMIWLGBL7CIJOGJQVOA3IN5BLYC3NHI"

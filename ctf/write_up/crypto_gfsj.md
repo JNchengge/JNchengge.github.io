@@ -1144,3 +1144,27 @@ f2.close()
 The known-plaintext attack (KPA) is an attack model for cryptanalysis where the attacker has samples of both the plaintext (called a crib), and its encrypted version (ciphertext). These can be used to reveal further secret information such as secret keys and code books. The term "crib" originated at Bletchley Park, the British World War II decryption operation. 
 The flag is CTF{6d5eba48508efb13dc87220879306619}
 ```
+# 简单流量分析
+- 打开之后，发现全是ICMP报文，其中有`no respones found`的内容，查询之后猜测可能是ICMP重定向攻击
+- https://blog.csdn.net/wuyou1995/article/details/105186240
+- 但是仔细一想没有中间人，检查了一下所有报文都是192.168.7.73和54.199.175.227之间的报文
+- 查询之后发现，原来flag藏在了ICMP报文的长度里面（淦，谁想得到）
+- 甚至还附带对pcap文件神器pyshark（数据包不可以爬的时候我人要气死了）
+- OK上代码
+```python
+from base64 import b64decode
+import pyshark
+flag=[]
+packets=pyshark.FileCapture('fetus_pcap.pcap')
+for packet in packets:
+    for pk in packet:
+        if pk.layer_name=='icmp':
+            if int(pk.type)!=0:
+                flag.append(int(pk.data_len))
+for i in range(len(flag)):
+    flag[i]=chr(flag[i])
+print(b64decode('Ojpcbm1vbmdvZGI6IToxNzg0MzowOjk5OTk5Ojc6OjpcbnVidW50dTokNiRMaEhSb21URSRNN0M0bjg0VWNGTEFHe3h4MmI4YV82bW02NGNfZnNvY2lldHl9Ojo='))
+```
+- 注意Linux下和VScode中都不可以跑，但是在命令行python中可以执行
+- 解出来base64编码
+- 解码得到flag`flag{xx2b8a_6mm64c_fsociety}`

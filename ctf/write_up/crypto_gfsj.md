@@ -1168,3 +1168,65 @@ print(b64decode('Ojpcbm1vbmdvZGI6IToxNzg0MzowOjk5OTk5Ojc6OjpcbnVidW50dTokNiRMaEh
 - 注意Linux下和VScode中都不可以跑，但是在命令行python中可以执行
 - 解出来base64编码
 - 解码得到flag`flag{xx2b8a_6mm64c_fsociety}`
+
+# Decode_The_File(base64隐写提取)
+- 浏览文件发现都是base64编码的内容
+- 跑python代码把解码后的内容输出到另一个文件中方便查看
+```python
+from base64 import b64decode
+b=[]
+t=open('4.txt','w')
+with open('3.txt','r') as f:
+    content=f.readlines()
+    for i in content:
+        tmp=b64decode(i)
+        b.append(tmp.decode('utf-8'))
+        t.write(tmp.decode('utf-8')+'\n')
+t.close()
+```
+- 看到文件本身是关于DES加密的内容，但是不知道要干什么
+- 上网看答案，发现是base64的隐写术
+- https://blog.csdn.net/weixin_44159598/article/details/103346365
+- 原理：
+  - base64在处理多余的bit时，某些情况下会忽略这些bit的内容而直接用=填充
+- 解题脚本如下：
+```python
+import string
+import libnum
+def tobin(data):
+    data=str(data)
+    base64table=string.ascii_uppercase+string.ascii_lowercase+string.digits+'+/'
+    index=base64table.find(data)
+    return format(index,'06b')
+def toStr(mybin):
+    binlen=len(mybin)
+    out=''
+    for i in range(0,binlen,8):
+        out+=chr(int('0b'+bin(mybin[i,i+8],2)))
+    return out
+flag=''
+f=open('3.txt','rb')
+for line in f:
+    line=line.decode('utf-8').strip()
+    if line[-2:] == '==':
+        tmp=line[-3]
+        tmp_bin=tobin(tmp)
+        print(tmp_bin)
+        flag+=tmp_bin[-4:]
+    elif line[-1:]== '=':
+        tmp=line[-2]
+        tmp_bin=tobin(tmp)
+        print(tmp_bin)
+        flag+=tmp_bin[-2:]
+print(flag)
+print(libnum.n2s(int(flag,base=2)))
+f.close()
+```
+- 这里注意几个点：
+  1. 使用base64解码之后的文件（也就是第一个脚本解出来的文件），是用字节类型填写的，需要先对其进行'utf-8'解码
+  2. 二进制文件不好读，所以使用txt文件来读
+  3. 分两种情况，第一种是末尾两个=的；第二种是末尾一个=的
+     1. 末尾两个=的，取最后一个字母在base64表中的位置的二进制的后四位
+     2. 末尾一个=的，取最后一个字母在base64表中的位置的二进制的后两位
+  4. 将结果塞进flag中，最后进行字符串转换
+- 得到flag`ROIS{base_GA_caN_b3_d1ffeR3nT}`

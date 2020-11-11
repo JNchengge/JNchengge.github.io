@@ -1230,3 +1230,37 @@ f.close()
      2. 末尾一个=的，取最后一个字母在base64表中的位置的二进制的后两位
   4. 将结果塞进flag中，最后进行字符串转换
 - 得到flag`ROIS{base_GA_caN_b3_d1ffeR3nT}`
+
+# Easy-Crypto
+- 简单的异或加密，直接把代码写出来跑一下就行了
+```python
+f=open('enc.txt','r',encoding='ISO-8859-1')
+s=[0 for i in range(256)]
+t=[0 for i in range(256)]
+j=0
+key='hello world'
+cipher=f.read()
+flag=[c for c in cipher]
+for i in range(256):
+    s[i]=i
+for i in range(256):
+    t[i]=ord(key[i%len(key)])
+for i in range(256):
+    j=(j+s[i]+t[i])%256
+    s[i],s[j]=s[j],s[i]
+i=0
+j=0
+for m in range(37):
+    i=(i+1)%256
+    j=(j+s[i])%256
+    s[i],s[j]=s[j],s[i]
+    x=(s[i]+(s[j]%256))%256
+    flag[m]=chr(ord(cipher[m])^s[x])
+print(''.join(flag))
+f.close()
+```
+
+# SM1
+- 暂时不会，有时间再研究
+
+# 

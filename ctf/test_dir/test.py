@@ -1,3 +1,8 @@
-from libnum import n2s
-a=0x437261636b4d654a757374466f7246756e
-print(n2s(a))
+s=":\"AL_RT^L*.?+6/46"
+key=[i for i in s]
+a='harambe'
+flag=''
+for i in range(len(s)):
+    flag+=chr(ord(a[i%7])^ord(s[i]))
+print(flag)
+

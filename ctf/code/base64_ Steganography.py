@@ -12,7 +12,7 @@ def toStr(mybin):
         out+=chr(int('0b'+bin(mybin[i,i+8],2)))
     return out
 flag=''
-f=open('3.txt','rb')
+f=open('1','r')
 for line in f:
     line=line.decode('utf-8').strip()
     if line[-2:] == '==':

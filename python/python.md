@@ -1552,6 +1552,126 @@ C
 
 
 
+# GUI
+- 这部分将通过解释实例的方式来学习GUI
+## 通过类的方式
+### 简易图片查看器
+```python
+import tkinter as tk
+import os
+from tkinter import *
+class Application(tk.Frame):
+    def __init__(self,master=None):
+        self.files=os.listdir(r'C:\Users\13415\Desktop\p')    #os模块listdir方法，获得指定位置文件夹中的所有对象名字，以列表的形式返回（只是表层，不会做更深一步的查找）
+        self.index=0                                          #用于循环播放图片
+        tk.Frame.__init__(self,master)                        #创建框架对象
+        self.img=tk.PhotoImage(file=r'C:\Users\13415\Desktop\p'+'\\'+self.files[self.index])     #tk的PhotoImage方法，通过路径读取图片，但是这一步并不显示图片，只是创建了一个图片的对象
+        self.pack()                                           #显示self
+        self.createWidgets()                                  #创建子组件
+    def createWidgets(self):
+        self.lblimage=Label(self,width=300,height=300)        #显示图片，图片的显示是通过Label显示的，Label["image"]表示Label的图片
+        self.lblimage['image']=self.img
+        self.lblimage.pack()                                  #lblimage.pack()
+        self.f=tk.Frame()                                     #创建Frame，用来装两个控制按钮
+        self.f.pack()                                         #f.pack()
+        Button(self.f,text="Prev",command=self.Prev).pack(side=LEFT)      #在f中创建Button，和Prev绑定
+        Button(self.f,text="Next",command=self.Next).pack(side=LEFT)      #在f中创建Button，和Next绑定
+    def Prev(self):
+        self.showfile(1)
+    def Next(self):
+        self.showfile(-1)
+    def showfile(self,a):
+        self.index+=a
+        self.index%=len(self.files)
+        self.img=tk.PhotoImage(file=r'C:\Users\13415\Desktop\p'+'\\'+self.files[self.index])
+        self.lblimage['image']=self.img
+root=Tk();root.title("简单图片查看器")
+app=Application(master=root)
+root.mainloop()
+```
+- 这个例子中几个比较重要的内容：
+1. os.listdir()
+2. pythonGUI中图片显示的方式
+3. tk.PhotoImage()方法
+- 框架解析：
+![](./p/example1.PNG)
+- 还需注意的是，PhotoImage()是不可以显示jpg,png图片的
+- https://blog.csdn.net/fjdmy001/article/details/78498150（这里有详解Button、Label的内容）
+
+### sayhi的绑定实验
+```python
+import tkinter as tk
+from tkinter import *
+from tkinter import messagebox
+class Appilication(tk.Frame):
+    def __init__(self,master=None):
+        tk.Frame.__init__(self,master)
+        self.pack()
+        self.createWidgets()
+    def createWidgets(self):
+        f1=tk.Frame();f1.pack()
+        Label(f1,text="用户名").pack(side=LEFT)
+        Entry(f1).pack(side=LEFT)
+        f2=tk.Frame();f2.pack()
+        Label(f2,text="密码").pack(side=LEFT)
+        Entry(f2,show="*").pack(side=LEFT)
+        f3=tk.Frame();f3.pack()
+        Button(f3,text="登录").pack(side=LEFT)
+        Button(f3,text="退出",command=self.destroy).pack(side=RIGHT)
+        f4=tk.Frame();f4.pack()
+        w=Button(f4,text="Sayhi")
+        w.pack()
+        w.bind('<Button-1>',self.sayhi)
+    def sayhi(self,e):  #如果想要使用bind()方法来进行绑定，那么相对应的函数中就要加入一个参数e，否则将会出现不符合预期的情况
+        messagebox.showinfo("Message","Hello World!")
+root=tk.Tk()
+root.title("测试")
+app=Appilication(master=root)
+root.mainloop()
+```
+- 需要注意的点：
+1. 所绑定函数需要加入参数e
+2. messagebox.showinfo(title,content)
+
+
+## 直接使用函数的方式
+
+### Message
+```python
+import tkinter as tk
+from tkinter import *
+root=Tk();root.title=("Message")
+w=Message(root,bg="pink",fg="white")  #在root内创建Message，设置背景和字体颜色
+w.config(text="wdnmd")                #设置文本内容
+w["anchor"]=W                         #通过修改"anchor"的方式设置为左对齐
+w.pack()                              #w.pack()
+root.mainloop()
+```
+- 本例子是一个关于Message的用法的简单实验
+
+### Entry
+```python
+import tkinter as tk
+from tkinter import *
+root=Tk();root.title=("Entry")
+v=StringVar()                    #设置字符串变量（用于后面的在输入框中显示默认值）
+w=Entry(root,textvariable=v)     #在root中创建Entry，并设置textvariable为v（StingVar）
+w.pack()                         #w.pack()
+w.get()                          #Entry获取值
+v.set('wdnmd')                   #设置v的值
+root.mainloop()
+```
+- 需要注意的点：
+1. Entry中设置默认值的方法
+
+
+
+
+
+
+
+
+
 
 
 # 其他
@@ -1574,3 +1694,4 @@ C
 - 字符串前面加`u`，该字符串以unicode格式进行编码（python2可以在开头加上<font color=008800>#encoding:utf-8</font>）
 - 字符串前面加`r`，该字符串中的转义字符全部失效，变为一般的字符串
 - 字符串前面加`b`，该字符串的类型转换为`byte`，网络编程中，服务器和浏览器只认`byte`类型的数据
+

@@ -10,3 +10,4 @@
   * [reverse](./ctf/write_up/Reverse.md)
   * [web_gfsj](./ctf/write_up/web_wp_gfsj.md)
   * [web_cg](./ctf/write_up/web_writeup.md)
+* [计算机组成原理](计算机组成原理/计算机组成原理.md)  

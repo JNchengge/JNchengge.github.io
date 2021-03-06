@@ -8,3 +8,5 @@
 * [ctf-web](ctf/write_up/web_wp_gfsj)
 * [ctf-web-CG](ctf/write_up/web_writeup)
 * [ctf-misc-gfsj](ctf/write_up/misc_gfsj)
+* [java](java/java基础.md)
+* [计算机组成原理](计算机组成原理/计算机组成原理.md)

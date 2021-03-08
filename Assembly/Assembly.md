@@ -59,19 +59,22 @@ d 2000:0 1f
 
 ```mermaid
 graph LR
-    CPU->RAM（主存储器）
-    CPU->ROM（装有系统BIOS）
-    CPU->内存条    
-    CPU->显卡（ROM装有显卡BIOS）
-    显卡->显示器
-    CPU->网卡（ROM装有网卡BIOS）
+    CPU --> RAM主存储器
+    CPU --> ROM装有系统BIOS
+    CPU --> 内存条    
+    CPU --> 显卡ROM装有显卡BIOS
+    显卡ROM装有显卡BIOS --> 显示器
+    CPU --> 网卡ROM装有网卡BIOS
 ```
 
 ```mermaid
 graph LR
-    CPU->|0~9FFFH|主随机存储器
-    CPU->|A000H~BFFFH|显存地址空间（修改数据会使得屏幕上的显示有变化）
-    CPU->|C000H~FFFFH|各个ROM的地址空间（只读，无法修改）
+    CPU-->主随机存储器
+    主随机存储器-->09FFFH
+    CPU-->显存地址空间
+    显存地址空间---|修改数据会使得屏幕上的显示有变化|A000H到BFFFH
+    CPU-->各个ROM的地址空间
+    各个ROM的地址空间-->|只读,无法修改|C000H到FFFFH
 ```
 
 # 第二章——寄存器

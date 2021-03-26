@@ -164,6 +164,7 @@ None
 ### 列表降维：
 1. 一个个加
 2. 使用`newlist = sum(oldlist,[])`
+  - 原理：sum接受两个参数，一个是可迭代对象，一个是start，`sum(Iterable[,start])`，start的用途是：以start为开始进行加操作
 
 # 深复制和浅复制
 ![](https://cdn.jsdelivr.net/gh/JNchengge/image@master/2.PNG)

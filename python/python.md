@@ -161,6 +161,10 @@ None
 - 因为该方法没有返回值，只会在已存在的列表中添加新的列表内容（菜鸟教程）
 - list.append也是同理
 
+### 列表降维：
+1. 一个个加
+2. 使用`newlist = sum(oldlist,[])`
+
 # 深复制和浅复制
 ![](https://cdn.jsdelivr.net/gh/JNchengge/image@master/2.PNG)
 - 可以看出，当使用copy方法时，虽然copy和origin的id不同，但是更深层次的deeper还是原来的id，所以这里只是
